@@ -5,7 +5,9 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -37,7 +39,7 @@ public class Book {
         // Quan hệ n-n với Category
         @ManyToMany
         @JoinTable(
-                name = "category",
+                name = "book_category",
                 joinColumns = @JoinColumn(name = "book_id"),
                 inverseJoinColumns = @JoinColumn(name = "category_id")
         )
@@ -46,9 +48,13 @@ public class Book {
         // Quan hệ n-n với Shelves
         @ManyToMany
         @JoinTable(
-                name = "shelf",
+                name = "book-shelf",
                 joinColumns = @JoinColumn(name = "book_id"),
                 inverseJoinColumns = @JoinColumn(name = "shelf_id")
         )
         Set<Shelf> shelves = new HashSet<>();
+
+        @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+        @Builder.Default
+        List<BookCopy> bookCopies = new ArrayList<>();
 }

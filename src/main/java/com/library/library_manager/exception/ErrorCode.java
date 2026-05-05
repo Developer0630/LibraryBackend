@@ -22,10 +22,25 @@ public enum ErrorCode {
     // 401 Unauthorized
     UNAUTHORIZED(40101, "Username or password is not correct", HttpStatus.UNAUTHORIZED),
 
+    // Lỗi về Sách (404)
+    BOOK_NOT_FOUND(40406, "Book not found!", HttpStatus.NOT_FOUND),
+    BOOK_COPY_NOT_FOUND(40407, "Book copy not found!", HttpStatus.NOT_FOUND),
+
+    // Lỗi về Logic (400)
+    BOOK_ALREADY_EXISTS(40002, "ISBN already exists in system!", HttpStatus.BAD_REQUEST),
+    CANNOT_DELETE_BOOK(40003, "Cannot delete book because some copies are being borrowed!", HttpStatus.BAD_REQUEST),
+    INSUFFICIENT_STOCK(40004, "Not enough available copies to remove!", HttpStatus.BAD_REQUEST),
+    INVALID_STOCK_ADJUSTMENT(40005, "Adjustment value is invalid!", HttpStatus.BAD_REQUEST),
+
+    // Lỗi liên quan đến Bản in (BookCopy)
+    COPY_NOT_FOUND(40407, "Book copy not found!", HttpStatus.NOT_FOUND),
+    CANNOT_DELETE_BORROWED_COPY(40010, "Cannot delete a copy that is currently borrowed!", HttpStatus.BAD_REQUEST),
+    INVALID_COPY_STATUS(40011, "Invalid circulation status provided!", HttpStatus.BAD_REQUEST),
+    BARCODE_ALREADY_EXISTS(40903, "Barcode already exists in the system!", HttpStatus.CONFLICT),
+
     // 500 Internal Server Error
     UNCATEGORIZED_EXCEPTION(9999, "Uncategorized error", HttpStatus.INTERNAL_SERVER_ERROR)
     ;
-
     int code;
     String message;
     HttpStatus status;

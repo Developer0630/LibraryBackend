@@ -2,11 +2,10 @@ package com.library.library_manager.controller;
 
 import com.library.library_manager.dto.staff.StaffResponseDTO;
 import com.library.library_manager.entity.Staff;
-import com.library.library_manager.service.StaffService;
+import com.library.library_manager.service.impl.StaffService;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,18 +21,18 @@ public class StaffController {
 
     @GetMapping
     public List<StaffResponseDTO> getStaffList() {
-        return staffService.getAllStaff();
+        return staffService.findAll();
     }
 
     // POST: Tạo mới
     @PostMapping
-    public ResponseEntity<Staff> createStaff(@RequestBody Staff staff) {
+    public ResponseEntity<StaffResponseDTO> createStaff(@RequestBody Staff staff) {
         return ResponseEntity.ok(staffService.createStaff(staff));
     }
 
     // PUT: Cập nhật theo staffId
     @PutMapping("/{staffId}")
-    public ResponseEntity<Staff> updateStaff(@PathVariable Long staffId, @RequestBody Staff staff) {
+    public ResponseEntity<StaffResponseDTO> updateStaff(@PathVariable Long staffId, @RequestBody Staff staff) {
         return ResponseEntity.ok(staffService.updateStaff(staffId, staff));
     }
 

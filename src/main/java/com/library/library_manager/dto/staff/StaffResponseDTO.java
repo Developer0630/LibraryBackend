@@ -1,17 +1,18 @@
 package com.library.library_manager.dto.staff;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
-@Builder
 @Data
-@AllArgsConstructor
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE) // Tự động thêm private cho các field
 public class StaffResponseDTO {
     Long staffId;
     String fullName;
+    String username;
     String email;
+    String phoneNumber;
     String positionName;
 }
