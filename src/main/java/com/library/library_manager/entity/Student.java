@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-
 import java.time.LocalDate;
 
 @Getter
@@ -14,17 +13,25 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
-
+@Table(name = "student")
 public class Student {
     @Id
     @Column(name = "student_id")
-    Long studentId;
+    Long id;
 
+    @Column(name = "student_code", unique = true)
+    String studentCode;
     @Column(name = "major")
     String major;
 
     @Column(name = "class", nullable = false)
     String clazz;
+
+    @Column(name = "dob")
+    LocalDate dob;
+
+    @Column(name = "status")
+    String status;
 
     @Column(name = "total_debt")
     Double totalDebt = 0.0;

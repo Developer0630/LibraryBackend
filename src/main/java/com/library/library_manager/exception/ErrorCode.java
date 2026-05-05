@@ -38,6 +38,14 @@ public enum ErrorCode {
     INVALID_COPY_STATUS(40011, "Invalid circulation status provided!", HttpStatus.BAD_REQUEST),
     BARCODE_ALREADY_EXISTS(40903, "Barcode already exists in the system!", HttpStatus.CONFLICT),
 
+    // Student Management Errors
+    STUDENT_NOT_FOUND(40408, "Student profile not found in the system.", HttpStatus.NOT_FOUND),
+    STUDENT_ALREADY_EXISTS(40904, "Student code is already registered.", HttpStatus.CONFLICT),
+    STUDENT_LOCKED(40302, "Student account is locked due to violations or outstanding debt.", HttpStatus.FORBIDDEN),
+    INVALID_STUDENT_STATUS(40012, "The provided account status is invalid.", HttpStatus.BAD_REQUEST),
+    MAX_BORROW_LIMIT_REACHED(40013, "Student has reached the maximum number of borrowed books.", HttpStatus.BAD_REQUEST),
+    STUDENT_HAS_DEBT(40014, "Action denied: Student has outstanding fines/debt.", HttpStatus.BAD_REQUEST),
+
     // 500 Internal Server Error
     UNCATEGORIZED_EXCEPTION(9999, "Uncategorized error", HttpStatus.INTERNAL_SERVER_ERROR)
     ;

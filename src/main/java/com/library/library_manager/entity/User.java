@@ -1,10 +1,7 @@
 package com.library.library_manager.entity;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.util.HashSet;
@@ -14,7 +11,9 @@ import java.util.Set;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Setter
 @Getter
-
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "user")
 @Data
@@ -30,6 +29,9 @@ public class User {
 
     @Column(name = "email", unique = true, nullable = false)
     String email;
+
+    @Column(name = "phone_number")
+    String phoneNumber;
 
     @Column(name = "user_name", unique = true, nullable = false, length = 50)
     String userName;
