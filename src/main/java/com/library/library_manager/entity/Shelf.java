@@ -1,22 +1,37 @@
 package com.library.library_manager.entity;
 
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
+@Table(name = "shelf")
+@Data
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Shelf {
-        @Id private Long shelf_id;
-        private String shelf_code, area_zone;
-        private Integer floor_level;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "shelf_id")
+    Long id;
+
+    @Column(name = "shelf_code", nullable = false, unique = true, length = 50)
+    String shelfCode; // Ví dụ: SHELF-A1
+
+    @Column(name = "area_zone", length = 50)
+    String areaZone; // Khu vực: A, B, C...
+
+    @Column(name = "floor_level")
+    Integer floorLevel; // Tầng số mấy
+
+    @ManyToMany(mappedBy = "shelves")
+    Set<Book> books = new HashSet<>();
 }

@@ -15,10 +15,27 @@ import java.time.LocalDateTime;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
 public class Notification {
-        @Id private Long notification_id;
-        private String title, content, type;
-        private Boolean is_read;
-        private LocalDateTime created_at;
-        @ManyToOne @JoinColumn(name = "user_id")
-        private User user;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "notification_id")
+    Long id;
+
+    @Column(name = "title")
+    String title;
+
+    @Column(name = "content")
+    String content;
+
+    @Column(name = "type", nullable = false)
+    String type;
+
+    @Column(name = "is_read")
+    private Boolean isRead;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id",  nullable = false)
+    private User user;
 }

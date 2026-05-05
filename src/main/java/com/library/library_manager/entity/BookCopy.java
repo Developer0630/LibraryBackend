@@ -5,20 +5,36 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
+@Table(name = "book_copy")
+@Data
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class BookCopy {
-        @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-        private Long id;
-        private String barcode, status;
-        private LocalDateTime entry_date;
-        @ManyToOne @JoinColumn(name = "book_id")
-        private Book book;
-        @ManyToOne @JoinColumn(name = "shelf_id")
-        private Shelf shelf;
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        @Column(name = "copy_id")
+        Long id;
+
+        @Column(name = "barcode", unique = true, nullable = false)
+        String barcode;
+
+        @Column(name = "status")
+        String status; // Ví dụ: Available, Borrowed, Lost
+
+        @Column(name = "shelf_location")
+        String shelfLocation;
+
+        @Column(name = "entry_date")
+        LocalDateTime entryDate = LocalDateTime.now();
+
+        @ManyToOne
+        @JoinColumn(name = "book_id", nullable = false)
+        Book book;
 }

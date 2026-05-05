@@ -12,15 +12,26 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
+@Table(name = "fine_payment")
+@Data
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class FinePayment {
-        @Id private Long payment_id;
-        private Double amount_paid;
-        private LocalDateTime payment_date;
-        private String payment_method;
-        @ManyToOne @JoinColumn(name = "violation_id")
-        private Violation violation;
-        @ManyToOne @JoinColumn(name = "processed_by")
-        private Staff staff;
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        @Column(name = "payment_id")
+        Long id;
+
+        @Column(name = "amount_paid", nullable = false)
+        Double amountPaid;
+
+        @Column(name = "payment_date")
+        LocalDateTime paymentDate = LocalDateTime.now();
+
+        @Column(name = "payment_method")
+        String paymentMethod; // Cash, Banking...
+
+        @ManyToOne
+        @JoinColumn(name = "violation_id")
+        Violation violation;
 }

@@ -12,15 +12,30 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
+@Table(name = "return_transaction")
+@Data
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class ReturnTransaction {
-        @Id private Long return_id;
-        private LocalDateTime return_date;
-        private String actual_condition;
-        private Double late_fee;
-        @OneToOne @JoinColumn(name = "loan_id")
-        private Loan loan;
-        @ManyToOne @JoinColumn(name = "processed_by")
-        private Staff staff;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "return_id")
+    Long id;
+
+    @Column(name = "return_date", nullable = false)
+    LocalDateTime returnDate = LocalDateTime.now();
+
+    @Column(name = "actual_condition")
+    String actualCondition; // Tình trạng sách khi trả
+
+    @Column(name = "late_fee")
+    Double lateFee = 0.0;
+
+    @OneToOne
+    @JoinColumn(name = "loan_id", nullable = false)
+    Loan loan;
+
+    @ManyToOne
+    @JoinColumn(name = "staff_id")
+    Staff staff;
 }

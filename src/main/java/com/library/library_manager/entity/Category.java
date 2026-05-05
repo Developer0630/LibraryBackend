@@ -5,6 +5,9 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Getter
 @Setter
 @Builder
@@ -12,8 +15,20 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
+@Table(name = "category")
+@Data
 public class Category {
-        @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-        private Long id;
-        private String category_name, description;
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        @Column(name = "category_id")
+        Long id;
+
+        @Column(name = "category_name", nullable = false, unique = true, length = 100)
+        String categoryName;
+
+        @Column(name = "description", columnDefinition = "TEXT")
+        String description;
+
+        @ManyToMany(mappedBy = "categories")
+        Set<Book> books = new HashSet<>();
 }

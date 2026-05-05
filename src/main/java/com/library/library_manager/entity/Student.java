@@ -16,9 +16,21 @@ import java.time.LocalDate;
 @Entity
 
 public class Student {
-    @Id private String student_id;
-    private String major, clazz;
-    private Double total_debt;
-    @OneToOne @JoinColumn(name = "user_id")
-    private User user;
+    @Id
+    @Column(name = "student_id")
+    Long studentId;
+
+    @Column(name = "major")
+    String major;
+
+    @Column(name = "class", nullable = false)
+    String clazz;
+
+    @Column(name = "total_debt")
+    Double totalDebt = 0.0;
+
+    @OneToOne
+    @MapsId
+    @JoinColumn(name = "student_id")
+    User user;
 }

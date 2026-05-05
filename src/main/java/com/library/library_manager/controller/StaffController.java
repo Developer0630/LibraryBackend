@@ -1,0 +1,46 @@
+package com.library.library_manager.controller;
+
+import com.library.library_manager.dto.staff.StaffResponseDTO;
+import com.library.library_manager.entity.Staff;
+import com.library.library_manager.service.StaffService;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@FieldDefaults(level = AccessLevel.PRIVATE)
+@AllArgsConstructor
+@RestController
+@RequestMapping("/api/staff")
+public class StaffController {
+
+    StaffService staffService;
+
+    @GetMapping
+    public List<StaffResponseDTO> getStaffList() {
+        return staffService.getAllStaff();
+    }
+
+    // POST: Tạo mới
+    @PostMapping
+    public ResponseEntity<Staff> createStaff(@RequestBody Staff staff) {
+        return ResponseEntity.ok(staffService.createStaff(staff));
+    }
+
+    // PUT: Cập nhật theo staffId
+    @PutMapping("/{staffId}")
+    public ResponseEntity<Staff> updateStaff(@PathVariable Long staffId, @RequestBody Staff staff) {
+        return ResponseEntity.ok(staffService.updateStaff(staffId, staff));
+    }
+
+    // DELETE: Xóa theo staffId
+    @DeleteMapping("/{staffId}")
+    public ResponseEntity<String> deleteStaff(@PathVariable Long staffId) {
+        staffService.deleteStaff(staffId);
+        return ResponseEntity.ok("Đã xóa nhân sự có ID: " + staffId); //khng cần trả về
+    }
+}

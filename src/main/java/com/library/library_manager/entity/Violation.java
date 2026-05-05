@@ -10,13 +10,26 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
+@Table(name = "violation")
+@Data
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Violation {
-        @Id private Long violation_id;
-        private String type;
-        private Double fine_amount;
-        private Boolean is_paid;
-        @ManyToOne @JoinColumn(name = "loan_id")
-        private Loan loan;
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        @Column(name = "violation_id")
+        Long id;
+
+        @Column(name = "type")
+        String type; // Ví dụ: Late Return, Damaged Book
+
+        @Column(name = "fine_amount")
+        Double fineAmount = 0.0;
+
+        @Column(name = "is_paid")
+        Boolean isPaid = false;
+
+        @ManyToOne
+        @JoinColumn(name = "loan_id")
+        Loan loan;
 }

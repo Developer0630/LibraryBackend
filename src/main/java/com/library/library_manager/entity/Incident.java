@@ -14,12 +14,36 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
+@Table(name = "incident")
 public class Incident {
-        @Id private Long incident_id;
-        private String title, description, priority, status;
-        private LocalDateTime created_at;
-        @ManyToOne @JoinColumn(name = "reported_by")
-        private User user;
-        @ManyToOne @JoinColumn(name = "processed_by")
-        private Staff staff;
+
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        @Column(name = "incident_id")
+        Long id;
+
+        @Column(name = "title", nullable = false, length = 200)
+        String title;
+
+        @Column(name = "description", columnDefinition = "TEXT")
+        String description;
+
+        @Column(name = "priority", length = 20)
+        String priority; // Ví dụ: Low, Medium, High, Critical
+
+        @Column(name = "status", length = 50)
+        String status; // Ví dụ: Pending, In Progress, Resolved, Closed
+
+        @Column(name = "created_at")
+        LocalDateTime createdAt = LocalDateTime.now();
+
+        // Người gửi sự cố (User)
+        @ManyToOne
+        @JoinColumn(name = "user_id", nullable = false)
+        User user;
+
+        // Người xử lý sự cố (Staff)
+        @ManyToOne
+        @JoinColumn(name = "staff_id") // Có thể null lúc mới tạo vì chưa có ai nhận xử lý
+                Staff staff;
 }
