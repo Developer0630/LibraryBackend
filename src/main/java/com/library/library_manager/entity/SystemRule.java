@@ -1,36 +1,53 @@
 package com.library.library_manager.entity;
 
-
-import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 
-@Entity
-@Table(name = "system_rule")
-@Data
-@NoArgsConstructor
+@Getter
 @AllArgsConstructor
-@Builder
-@FieldDefaults(level = AccessLevel.PRIVATE)
-public class SystemRule {
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+public enum SystemRule {
 
-        @Id
-        @GeneratedValue(strategy = GenerationType.IDENTITY)
-        @Column(name = "rule_id")
-        Long id;
+    // Định nghĩa các hằng số hệ thống
+    MAX_BORROW_DAYS("14", "days", "Số ngày tối đa được mượn cho một lần mượn"),
+    MAX_BORROW_BOOKS("5", "books", "Số lượng sách tối đa một sinh viên được giữ"),
+    LATE_FEE_PER_DAY("5000", "VND", "Tiền phạt quá hạn trên mỗi ngày trả trễ"),
+    RENEW_LIMIT("2", "times", "Số lần tối đa được phép gia hạn một cuốn sách"),
+    WARNING_BEFORE_EXPIRY("2", "days", "Thời gian gửi thông báo trước khi sách hết hạn"),
+    MIN_PASSWORD_LENGTH("8", "characters", "Độ dài mật khẩu tối thiểu của người dùng");
 
-        @Column(name = "rule_key", unique = true, nullable = false, length = 100)
-        String ruleKey; // Ví dụ: MAX_BORROW_DAYS, LATE_FEE_PER_DAY
+    String value;
+    String unit;
+    String description;
 
-        @Column(name = "rule_value", nullable = false, length = 255)
-        String ruleValue; // Ví dụ: "14", "5000"
+    /**
+     * Chuyển đổi giá trị sang kiểu int
+     */
+    public int asInt() {
+        try {
+            return Integer.parseInt(this.value);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
 
-        @Column(name = "unit", length = 50)
-        String unit; // Đơn vị: "days", "VND", "books"
+    /**
+     * Chuyển đổi giá trị sang kiểu double
+     */
+    public double asDouble() {
+        try {
+            return Double.parseDouble(this.value);
+        } catch (NumberFormatException e) {
+            return 0.0;
+        }
+    }
 
-        @Column(name = "data_type", length = 20)
-        String dataType; // Để biết đường ép kiểu trong Java: "Integer", "Double", "Boolean"
-
-        @Column(name = "description", columnDefinition = "TEXT")
-        String description; // Giải thích quy tắc này dùng làm gì
+    /**
+     * Chuyển đổi giá trị sang kiểu boolean
+     */
+    public boolean asBoolean() {
+        return Boolean.parseBoolean(this.value);
+    }
 }
