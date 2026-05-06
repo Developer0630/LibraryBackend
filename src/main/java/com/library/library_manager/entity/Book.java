@@ -48,7 +48,7 @@ public class Book {
         // Quan hệ n-n với Shelves
         @ManyToMany
         @JoinTable(
-                name = "book-shelf",
+                name = "book_shelf",
                 joinColumns = @JoinColumn(name = "book_id"),
                 inverseJoinColumns = @JoinColumn(name = "shelf_id")
         )

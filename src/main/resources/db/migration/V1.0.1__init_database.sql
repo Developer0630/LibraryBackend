@@ -5,6 +5,7 @@ CREATE TABLE user (
                       email VARCHAR(255) NOT NULL UNIQUE,
                       full_name VARCHAR(255) NOT NULL,
                       password VARCHAR(255) NOT NULL,
+                      phone_number VARCHAR(20), -- THÊM DÒNG NÀY
                       PRIMARY KEY (user_id)
 ) ENGINE=InnoDB;
 
@@ -44,9 +45,12 @@ CREATE TABLE system_rule (
 -- 2. NHÓM BẢNG CẤP 2 (Chỉ phụ thuộc vào nhóm 1)
 CREATE TABLE student (
                          student_id BIGINT NOT NULL,
+                         student_code VARCHAR(50) NOT NULL UNIQUE,
                          major VARCHAR(255),
                          class VARCHAR(255) NOT NULL,
-                         total_debt FLOAT(53),
+                         dob DATE,
+                         status VARCHAR(20) DEFAULT 'ACTIVE',
+                         total_debt FLOAT(53) DEFAULT 0.0,
                          PRIMARY KEY (student_id),
                          CONSTRAINT fk_student_user FOREIGN KEY (student_id) REFERENCES user (user_id)
 ) ENGINE=InnoDB;
@@ -160,11 +164,17 @@ CREATE TABLE return_transaction (
 -- 4. CÁC BẢNG PHỤ TRỢ KHÁC
 CREATE TABLE category (
                           category_id BIGINT NOT NULL AUTO_INCREMENT,
-                          book_id BIGINT NOT NULL,
                           category_name VARCHAR(100) NOT NULL UNIQUE,
                           description TEXT,
-                          PRIMARY KEY (category_id),
-                          CONSTRAINT fk_category_book FOREIGN KEY (book_id) REFERENCES book (book_id)
+                          PRIMARY KEY (category_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE book_category (
+                               book_id BIGINT NOT NULL,
+                               category_id BIGINT NOT NULL,
+                               PRIMARY KEY (book_id, category_id),
+                               CONSTRAINT fk_bc_book FOREIGN KEY (book_id) REFERENCES book (book_id),
+                               CONSTRAINT fk_bc_category FOREIGN KEY (category_id) REFERENCES category (category_id)
 ) ENGINE=InnoDB;
 
 CREATE TABLE shelf (
@@ -175,6 +185,16 @@ CREATE TABLE shelf (
                        floor_level INTEGER,
                        PRIMARY KEY (shelf_id),
                        CONSTRAINT fk_shelf_book FOREIGN KEY (book_id) REFERENCES book (book_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE book_shelf (
+                            shelf_id BIGINT NOT NULL AUTO_INCREMENT,
+                            book_id BIGINT NOT NULL,
+                            shelf_code VARCHAR(50) NOT NULL UNIQUE,
+                            area_zone VARCHAR(50),
+                            floor_level INTEGER,
+                            PRIMARY KEY (shelf_id),
+                            CONSTRAINT fk_bookshelf_book_id FOREIGN KEY (book_id) REFERENCES book (book_id)
 ) ENGINE=InnoDB;
 
 CREATE TABLE book_review (

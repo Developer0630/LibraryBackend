@@ -2,6 +2,7 @@ package com.library.library_manager.service.impl;
 
 import com.library.library_manager.dto.BorrowHistoryDTO;
 import com.library.library_manager.dto.PageResponse;
+import com.library.library_manager.dto.PasswordResetRequest;
 import com.library.library_manager.dto.ViolationDTO;
 import com.library.library_manager.dto.student.StudentRequestDTO;
 import com.library.library_manager.dto.student.StudentResponseDTO;
@@ -22,7 +23,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -122,11 +127,18 @@ public class StudentService implements IStudentService {
         studentRepository.save(student);
     }
 
-    @Override
-    public void resetPassword(Long id) {
-        studentRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.STUDENT_NOT_FOUND));
-        // TODO: Implement email sending logic
+    public void resetPassword(Long studentId, String newPassword) {
+        // 1. Kiểm tra sinh viên tồn tại
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new RuntimeException("STUDENT_NOT_FOUND"));
+
+        // 2. Lấy User và cập nhật mật khẩu tùy chỉnh
+        User user = student.getUser();
+
+        user.setPassword(newPassword);
+
+        // 3. Lưu vào DB
+        userRepository.save(user);
     }
 
     @Override

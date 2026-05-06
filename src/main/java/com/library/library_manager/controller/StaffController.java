@@ -40,6 +40,6 @@ public class StaffController {
     @DeleteMapping("/{staffId}")
     public ResponseEntity<String> deleteStaff(@PathVariable Long staffId) {
         staffService.deleteStaff(staffId);
-        return ResponseEntity.ok("Đã xóa nhân sự có ID: " + staffId); //khng cần trả về
+        return ResponseEntity.ok("Deleted staff with id: " + staffId); //khng cần trả về
     }
 }

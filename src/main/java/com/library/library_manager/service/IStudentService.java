@@ -20,7 +20,7 @@ public interface IStudentService {
 
     void updateStatus(Long id, String status);
 
-    void resetPassword(Long id);
+    void resetPassword(Long id, String newPassword);
 
     List<BorrowHistoryDTO> getBorrowHistory(Long id);
 
