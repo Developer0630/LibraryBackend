@@ -1,6 +1,5 @@
 package com.library.library_manager.entity;
 
-
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -14,7 +13,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Entity
 @Table(name = "loan")
-@Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Loan {
         @Id
@@ -34,6 +32,11 @@ public class Loan {
         @Column(name = "status")
         String status; // Ví dụ: Active, Returned, Overdue
 
+        @Column(name = "return_status")
+        private String returnStatus; // Tình trạng sách khi trả (Nguyên vẹn, Hư hỏng)
+
+        @Column(name = "staff_note")
+        private String staffNote; // Ghi chú của thủ thư
         @ManyToOne
         @JoinColumn(name = "user_id", nullable = false)
         User user;

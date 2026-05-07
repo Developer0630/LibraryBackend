@@ -30,4 +30,7 @@ public interface IStudentRepository extends JpaRepository<Student, Long> {
 
     // 4. Tìm kiếm theo Username của bảng User (thông qua mối quan hệ @OneToOne)
     Optional<Student> findByUser_UserName(String userName);
+
+
+
 }

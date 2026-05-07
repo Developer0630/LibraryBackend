@@ -1,19 +1,13 @@
 package com.library.library_manager.service.impl;
 
-import com.library.library_manager.dto.BorrowHistoryDTO;
-import com.library.library_manager.dto.PageResponse;
-import com.library.library_manager.dto.PasswordResetRequest;
-import com.library.library_manager.dto.ViolationDTO;
+import com.library.library_manager.dto.*;
+import com.library.library_manager.dto.student.StudentProfileResponseDTO;
 import com.library.library_manager.dto.student.StudentRequestDTO;
 import com.library.library_manager.dto.student.StudentResponseDTO;
-import com.library.library_manager.entity.Role;
-import com.library.library_manager.entity.Student;
-import com.library.library_manager.entity.User;
+import com.library.library_manager.entity.*;
 import com.library.library_manager.exception.AppException;
 import com.library.library_manager.exception.ErrorCode;
-import com.library.library_manager.repository.IRoleRepository;
-import com.library.library_manager.repository.IStudentRepository;
-import com.library.library_manager.repository.IUserRepository;
+import com.library.library_manager.repository.*;
 import com.library.library_manager.service.IStudentService;
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
@@ -23,16 +17,16 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
+
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -41,6 +35,14 @@ public class StudentService implements IStudentService {
     IStudentRepository studentRepository;
     IUserRepository userRepository;
     IRoleRepository roleRepository;
+
+    private ILoanRepository loanRepository;
+    private IViolationRepository violationRepository;
+
+    private final IBorrowHistoryRepository borrowHistoryRepository;
+    private final IReservationRepository reservationRepository;
+    private final IFinePaymentRepository finePaymentRepository;
+    private final INotificationRepository notificationRepository;
 
     @Override
     public PageResponse<StudentResponseDTO> getAll(int page, int size, String studentCode, String status) {
@@ -151,6 +153,7 @@ public class StudentService implements IStudentService {
         return Collections.emptyList();
     }
 
+    // 1. Xem hồ sơ cá nhân
     private StudentResponseDTO mapToResponse(Student student) {
         return StudentResponseDTO.builder()
                 .id(student.getId())
@@ -163,5 +166,98 @@ public class StudentService implements IStudentService {
                 .status(student.getStatus())
                 .balance(student.getTotalDebt())
                 .build();
+    }
+
+    public StudentProfileResponseDTO getProfileByUsername(String username) {
+        // 1. Tìm sinh viên dựa trên username của tài khoản liên kết
+        // findByUser_UserName là phương thức chúng ta đã thêm vào StudentRepository
+        Student student = studentRepository.findByUser_UserName(username)
+                .orElseThrow(() -> new RuntimeException("Student information not found for the account: " + username));
+
+        // 2. Lấy thông tin User liên kết với sinh viên đó
+        User user = student.getUser();
+
+        // 3. Chuyển đổi sang DTO để trả về cho Controller
+        // Đảm bảo thứ tự tham số khớp với Constructor trong StudentProfileResponse của bạn
+        return new StudentProfileResponseDTO(
+                user.getFullName(),
+                student.getStudentCode(),
+                user.getEmail(),
+                user.getPhoneNumber(),
+                student.getClazz(),
+                student.getMajor(),
+                student.getStatus()
+        );
+    }
+
+    // 2. Xem sách đang mượn
+    public List<BorrowedItemResponse> getBorrowedItems(String username) {
+        return loanRepository.findByUser_UserNameAndReturnedAtIsNull(username).stream()
+                .map(loan -> {
+                    long daysLeft = ChronoUnit.DAYS.between(LocalDate.now(), loan.getDueDate().toLocalDate());
+                    String status = (daysLeft < 0) ? "QUÁ HẠN" : (daysLeft <= 3 ? "SẮP ĐẾN HẠN" : "ĐANG MƯỢN");
+                    return new BorrowedItemResponse(loan.getBookCopy().getBook().getTitle(),
+                            loan.getBorrowDate(), loan.getDueDate(), status);
+                }).collect(Collectors.toList());
+    }
+
+    // 3. Xem vi phạm
+    public List<ViolationResponse> getViolations(String username) {
+        return violationRepository.findByLoan_User_UserName(username).stream()
+                .map(v -> new ViolationResponse(v.getType(), v.getFineAmount(),
+                        v.getIsPaid(), v.getLoan().getBookCopy().getBook().getTitle()))
+                .collect(Collectors.toList());
+    }
+
+    // Xem lịch sử mượn trả
+    public List<HistoryResponse> getBorrowHistory(String username) {
+        return borrowHistoryRepository.findByUser_UserNameOrderByBorrowDateDesc(username).stream()
+                .map(l -> new HistoryResponse(l.getBookCopy().getBook().getTitle(),
+                        l.getBorrowDate(), l.getReturnedAt(), l.getStatus(), l.getStaffNote()))
+                .collect(Collectors.toList());
+    }
+
+    // Xem đặt trước
+    public List<ReservationResponse> getReservations(String username) {
+        // Gọi đúng tên hàm dài hơn một chút nhưng cực kỳ chính xác
+        return reservationRepository.findByStudent_User_UserNameOrderByRequestDateDesc(username).stream()
+                .map(r -> new ReservationResponse(
+                        r.getBook().getTitle(),
+                        r.getRequestDate(), // Trong Entity bạn đặt là requestDate chứ không phải createdAt
+                        r.getStatus()
+                ))
+                .collect(Collectors.toList());
+    }
+
+    // Tổng tiền phạt cần đóng
+    public FineResponse getTotalFines(String username) {
+        List<Violation> unpaid = violationRepository.findByLoan_User_UserName(username)
+                .stream().filter(v -> !v.getIsPaid()).collect(Collectors.toList());
+
+        Double total = unpaid.stream().mapToDouble(Violation::getFineAmount).sum();
+
+        List<ViolationResponse> details = unpaid.stream()
+                .map(v -> new ViolationResponse(v.getType(), v.getFineAmount(),
+                        v.getIsPaid(), v.getLoan().getBookCopy().getBook().getTitle()))
+                .collect(Collectors.toList());
+
+        return new FineResponse(total, details);
+    }
+
+    // Lịch sử thanh toán
+    public List<PaymentHistoryResponse> getPaymentHistory(String username) {
+        return finePaymentRepository.findByStudent_User_UserNameOrderByPaymentDateDesc(username)
+                .stream()
+                .map(p -> new PaymentHistoryResponse(
+                        p.getPaymentDate(),
+                        p.getAmountPaid(),
+                        p.getPaymentMethod()
+                ))
+                .collect(Collectors.toList());
+    }
+
+    // Nhận thông báo
+    public List<Notification> getNotifications(String username) {
+        return notificationRepository.findByUser_UserNameOrderByCreatedAtDesc(username);
     }
 }

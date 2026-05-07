@@ -4,8 +4,12 @@ import com.library.library_manager.dto.ApiResponse;
 import com.library.library_manager.dto.BorrowHistoryDTO;
 import com.library.library_manager.dto.PasswordResetRequest;
 import com.library.library_manager.dto.ViolationDTO;
+import com.library.library_manager.dto.student.StudentProfileResponseDTO;
 import com.library.library_manager.dto.student.StudentRequestDTO;
 import com.library.library_manager.dto.student.StudentResponseDTO;
+import com.library.library_manager.entity.Student;
+import com.library.library_manager.entity.User;
+import com.library.library_manager.repository.IStudentRepository;
 import com.library.library_manager.service.IStudentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +23,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class StudentController {
     private final IStudentService studentService;
+    private final IStudentRepository studentRepository;
 
     @PostMapping
     public ApiResponse<StudentResponseDTO> create(@RequestBody @Valid StudentRequestDTO request) {
@@ -62,5 +67,22 @@ public class StudentController {
     @GetMapping("/{studentId}/violations")
     public ResponseEntity<List<ViolationDTO>> getViolations(@PathVariable Long studentId) {
         return ResponseEntity.ok(studentService.getViolations(studentId));
+    }
+
+    public StudentProfileResponseDTO getProfileByUsername(String username) {
+        Student student = studentRepository.findByUser_UserName(username)
+                .orElseThrow(() -> new RuntimeException("Don't get student with this username"));
+
+        User user = student.getUser();
+
+        return new StudentProfileResponseDTO(
+                user.getFullName(),
+                student.getStudentCode(),
+                user.getEmail(),
+                user.getPhoneNumber(),
+                student.getClazz(),
+                student.getMajor(),
+                student.getStatus()
+        );
     }
 }

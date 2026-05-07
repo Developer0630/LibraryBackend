@@ -12,24 +12,27 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Data
 @Entity
 @Table(name = "fine_payment")
-@Data
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class FinePayment {
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         @Column(name = "payment_id")
         Long id;
 
-        @Column(name = "amount_paid", nullable = false)
+        @Column(name = "amount_paid")
         Double amountPaid;
 
         @Column(name = "payment_date")
-        LocalDateTime paymentDate = LocalDateTime.now();
+        LocalDateTime paymentDate;
 
         @Column(name = "payment_method")
-        String paymentMethod; // Cash, Banking...
+        String paymentMethod;
+
+        @ManyToOne
+        @JoinColumn(name = "student_id", nullable = false)
+        Student student;
 
         @ManyToOne
         @JoinColumn(name = "violation_id")

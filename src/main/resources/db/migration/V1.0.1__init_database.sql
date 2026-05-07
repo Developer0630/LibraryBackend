@@ -100,17 +100,18 @@ CREATE TABLE book_copy (
 -- 3. NHÓM BẢNG NGHIỆP VỤ (Nối nhiều phía)
 CREATE TABLE loan (
                       loan_id BIGINT NOT NULL AUTO_INCREMENT,
+                      borrow_date DATETIME NOT NULL,
+                      due_date DATETIME NOT NULL,
+                      returned_at DATETIME,
+                      status VARCHAR(255),
+                      return_status VARCHAR(255), -- Thêm cột này
+                      staff_note TEXT,            -- Thêm cột này
                       user_id BIGINT NOT NULL,
                       copy_id BIGINT NOT NULL,
                       staff_id BIGINT,
-                      borrow_date DATETIME(6) NOT NULL,
-                      due_date DATETIME(6) NOT NULL,
-                      returned_at DATETIME(6),
-                      status VARCHAR(255),
                       PRIMARY KEY (loan_id),
                       CONSTRAINT fk_loan_user FOREIGN KEY (user_id) REFERENCES user (user_id),
-                      CONSTRAINT fk_loan_copy FOREIGN KEY (copy_id) REFERENCES book_copy (copy_id),
-                      CONSTRAINT fk_loan_staff FOREIGN KEY (staff_id) REFERENCES staff (staff_id)
+                      CONSTRAINT fk_loan_copy FOREIGN KEY (copy_id) REFERENCES book_copy (copy_id)
 ) ENGINE=InnoDB;
 
 CREATE TABLE reservation (
