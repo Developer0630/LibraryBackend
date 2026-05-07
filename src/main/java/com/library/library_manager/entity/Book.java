@@ -1,6 +1,5 @@
 package com.library.library_manager.entity;
 
-
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -30,11 +29,20 @@ public class Book {
         @Column(name = "author", length = 150)
         String author;
 
+        @Column(name = "publisher", length = 255) // Mới thêm
+        String publisher;
+
+        @Column(name = "isbn", length = 50)      // Mới thêm
+        String isbn;
+
         @Column(name = "price")
         Double price;
 
         @Column(name = "description", columnDefinition = "TEXT")
         String description;
+
+        @Column(name = "status", length = 50)    // Mới thêm
+        String status;
 
         // Quan hệ n-n với Category
         @ManyToMany
@@ -43,6 +51,7 @@ public class Book {
                 joinColumns = @JoinColumn(name = "book_id"),
                 inverseJoinColumns = @JoinColumn(name = "category_id")
         )
+        @Builder.Default
         Set<Category> categories = new HashSet<>();
 
         // Quan hệ n-n với Shelves
@@ -52,6 +61,7 @@ public class Book {
                 joinColumns = @JoinColumn(name = "book_id"),
                 inverseJoinColumns = @JoinColumn(name = "shelf_id")
         )
+        @Builder.Default
         Set<Shelf> shelves = new HashSet<>();
 
         @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)

@@ -10,4 +10,7 @@ import java.util.List;
 public interface IReservationRepository extends JpaRepository<Reservation, Long> {
     // Tìm qua: Reservation -> Student -> User -> UserName
     List<Reservation> findByStudent_User_UserNameOrderByRequestDateDesc(String username);
+
+    // Đếm số lượng đặt trước đang PENDING để kiểm tra hạn mức
+    long countByStudent_User_UserNameAndStatus(String username, String status);
 }

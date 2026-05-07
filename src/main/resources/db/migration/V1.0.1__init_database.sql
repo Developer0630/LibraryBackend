@@ -27,8 +27,11 @@ CREATE TABLE book (
                       book_id BIGINT NOT NULL AUTO_INCREMENT,
                       title VARCHAR(255) NOT NULL,
                       author VARCHAR(150),
+                      publisher VARCHAR(255), -- Cần thiết cho lọc nâng cao
+                      isbn VARCHAR(50),       -- Cần thiết cho quản lý đầu sách
                       price FLOAT(53),
                       description TEXT,
+                      status VARCHAR(50) DEFAULT 'Available', -- Cần thiết để biết đầu sách còn hay hết
                       PRIMARY KEY (book_id)
 ) ENGINE=InnoDB;
 
@@ -92,7 +95,7 @@ CREATE TABLE book_copy (
                            barcode VARCHAR(255) NOT NULL UNIQUE,
                            status VARCHAR(255),
                            shelf_location VARCHAR(255),
-                           entry_date DATETIME(6),
+                           entry_date DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6),
                            PRIMARY KEY (copy_id),
                            CONSTRAINT fk_copy_book FOREIGN KEY (book_id) REFERENCES book (book_id)
 ) ENGINE=InnoDB;

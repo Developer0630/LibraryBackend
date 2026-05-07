@@ -1,6 +1,7 @@
 package com.library.library_manager.service.impl;
 
 import com.library.library_manager.dto.*;
+import com.library.library_manager.dto.book.ReviewRequestDTO;
 import com.library.library_manager.dto.student.StudentProfileResponseDTO;
 import com.library.library_manager.dto.student.StudentRequestDTO;
 import com.library.library_manager.dto.student.StudentResponseDTO;
@@ -20,7 +21,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.HashSet;
@@ -36,13 +39,17 @@ public class StudentService implements IStudentService {
     IUserRepository userRepository;
     IRoleRepository roleRepository;
 
-    private ILoanRepository loanRepository;
-    private IViolationRepository violationRepository;
+    ILoanRepository loanRepository;
+    IViolationRepository violationRepository;
 
-    private final IBorrowHistoryRepository borrowHistoryRepository;
-    private final IReservationRepository reservationRepository;
-    private final IFinePaymentRepository finePaymentRepository;
-    private final INotificationRepository notificationRepository;
+    final IBorrowHistoryRepository borrowHistoryRepository;
+    final IReservationRepository reservationRepository;
+    final IFinePaymentRepository finePaymentRepository;
+    final INotificationRepository notificationRepository;
+
+    final IBookReviewRepository bookReviewRepository;
+    final IBookCopyRepository bookCopyRepository;
+    private final IBookRepository bookRepository;
 
     @Override
     public PageResponse<StudentResponseDTO> getAll(int page, int size, String studentCode, String status) {
@@ -232,7 +239,7 @@ public class StudentService implements IStudentService {
     // Tổng tiền phạt cần đóng
     public FineResponse getTotalFines(String username) {
         List<Violation> unpaid = violationRepository.findByLoan_User_UserName(username)
-                .stream().filter(v -> !v.getIsPaid()).collect(Collectors.toList());
+                .stream().filter(v -> !v.getIsPaid()).toList();
 
         Double total = unpaid.stream().mapToDouble(Violation::getFineAmount).sum();
 
@@ -259,5 +266,113 @@ public class StudentService implements IStudentService {
     // Nhận thông báo
     public List<Notification> getNotifications(String username) {
         return notificationRepository.findByUser_UserNameOrderByCreatedAtDesc(username);
+    }
+
+    // --- LOGIC ĐÁNH GIÁ SÁCH ---
+    @Transactional
+    public void postReview(Long bookId, ReviewRequestDTO dto, String username) {
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new RuntimeException("Book not found with id: " + bookId));
+
+        Student student = studentRepository.findByUser_UserName(username)
+                .orElseThrow(() -> new RuntimeException("Student is not valid"));
+
+        BookReview review = BookReview.builder()
+                .rating(dto.getRating())
+                .comment(dto.getComment())
+                .book(book)
+                .student(student)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        bookReviewRepository.save(review);
+    }
+
+    // Logic tính 3 ngày làm việc (bỏ qua T7, CN)
+    private LocalDateTime calculateExpirationDate(LocalDateTime start) {
+        int addedDays = 0;
+        LocalDateTime result = start;
+        while (addedDays < 3) {
+            result = result.plusDays(1);
+            if (!(result.getDayOfWeek() == DayOfWeek.SATURDAY || result.getDayOfWeek() == DayOfWeek.SUNDAY)) {
+                addedDays++;
+            }
+        }
+        return result;
+    }
+
+    @Transactional
+    public ReservationResponse createReservation(ReservationRequestDTO dto, String username) {
+        // 1. Kiểm tra hạn mức (Ví dụ: Tổng mượn + đặt không quá 5)
+        long currentLoans = loanRepository.countByUser_UserNameAndReturnedAtIsNull(username);
+        long currentRes = reservationRepository.countByStudent_User_UserNameAndStatus(username, "Đang giữ");
+
+        if (currentLoans + currentRes >= 5) {
+            throw new RuntimeException("Bạn đã đạt hạn mức mượn và đặt sách (tối đa 5 cuốn).");
+        }
+
+        // 2. Tìm bản sao sách (Copy)
+        BookCopy copy = bookCopyRepository.findById(dto.getCopy_id())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy bản sao sách này."));
+
+        Student student = studentRepository.findByUser_UserName(username)
+                .orElseThrow(() -> new RuntimeException("Sinh viên không tồn tại."));
+
+        // 3. Tạo Reservation
+        Reservation res = new Reservation();
+        res.setBook(copy.getBook());
+        res.setBookCopy(copy);
+        res.setStudent(student);
+        res.setRequestDate(LocalDateTime.now());
+        res.setExpirationDate(calculateExpirationDate(LocalDateTime.now()));
+        res.setStatus("Đang giữ");
+
+        reservationRepository.save(res);
+
+        return new ReservationResponse(copy.getBook().getTitle(), res.getRequestDate(), res.getStatus());
+    }
+
+    // API Hủy đặt trước
+    @Transactional
+    public void cancelReservation(Long id, String username) {
+        Reservation res = reservationRepository.findById(id).orElseThrow();
+        if (!res.getStudent().getUser().getUserName().equals(username)) {
+            throw new RuntimeException("Bạn không có quyền hủy yêu cầu này.");
+        }
+        res.setStatus("Bị hủy");
+        reservationRepository.save(res);
+    }
+
+    @Transactional
+    public void updateReview(Long reviewId, ReviewRequestDTO dto, String username) {
+        // 1. Tìm đánh giá cũ dựa trên ID
+        BookReview review = bookReviewRepository.findById(reviewId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đánh giá với ID: " + reviewId));
+
+        // 2. Kiểm tra quyền sở hữu: Sinh viên chỉ được sửa đánh giá của chính mình
+        // So sánh username của người đang đăng nhập với username của người tạo review
+        if (!review.getStudent().getUser().getUserName().equals(username)) {
+            throw new RuntimeException("Bạn không có quyền chỉnh sửa đánh giá này!");
+        }
+
+        // 3. Cập nhật dữ liệu mới từ DTO
+        review.setRating(dto.getRating());
+        review.setComment(dto.getComment());
+        review.setCreatedAt(LocalDateTime.now()); // Cập nhật lại thời gian chỉnh sửa
+
+        // 4. Lưu lại (Hibernate sẽ tự động update nhờ @Transactional)
+        bookReviewRepository.save(review);
+    }
+
+    public ReservationResponse getReservationDetail(Long id, String username) {
+        Reservation res = reservationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy yêu cầu đặt trước"));
+
+        // Kiểm tra bảo mật (chỉ cho phép chủ nhân xem)
+        if (!res.getStudent().getUser().getUserName().equals(username)) {
+            throw new RuntimeException("Bạn không có quyền xem chi tiết yêu cầu này");
+        }
+
+        return new ReservationResponse(res.getBook().getTitle(), res.getRequestDate(), res.getStatus());
     }
 }
