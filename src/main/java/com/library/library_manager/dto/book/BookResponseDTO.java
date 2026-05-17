@@ -19,7 +19,7 @@ public class BookResponseDTO {
     String description;
     Integer publishYear;
     String shelfLocation;
-
+    Integer totalStock;
     // Trả về danh sách bản in tối giản
     List<BookCopyResponseDTO> copies;
 }

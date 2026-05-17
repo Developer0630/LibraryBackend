@@ -32,13 +32,13 @@ public class StaffController {
 
     // PUT: Cập nhật theo staffId
     @PutMapping("/{staffId}")
-    public ResponseEntity<StaffResponseDTO> updateStaff(@PathVariable Long staffId, @RequestBody Staff staff) {
+    public ResponseEntity<StaffResponseDTO> updateStaff(@PathVariable("staffId") Long staffId, @RequestBody Staff staff) {
         return ResponseEntity.ok(staffService.updateStaff(staffId, staff));
     }
 
     // DELETE: Xóa theo staffId
     @DeleteMapping("/{staffId}")
-    public ResponseEntity<String> deleteStaff(@PathVariable Long staffId) {
+    public ResponseEntity<String> deleteStaff(@PathVariable("staffId") Long staffId) {
         staffService.deleteStaff(staffId);
         return ResponseEntity.ok("Deleted staff with id: " + staffId); //khng cần trả về
     }

@@ -17,7 +17,9 @@ public class BookController {
     private final BookService bookService;
 
     @GetMapping
-    public ApiResponse<List<BookResponseDTO>> getAll(@RequestParam(required = false) String q) {
+    public ApiResponse<List<BookResponseDTO>> getAll(
+        @RequestParam(value = "q", required = false) String q 
+    ) {
         return ApiResponse.<List<BookResponseDTO>>builder()
                 .data(bookService.findAll())
                 .build();

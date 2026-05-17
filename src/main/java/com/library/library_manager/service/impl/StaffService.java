@@ -90,6 +90,8 @@ public class StaffService implements IStaffService {
                 .fullName(staff.getUser().getFullName())
                 .positionName(staff.getPosition().getPositionName())
                 .username(staff.getUser().getUserName())
+                .email(staff.getUser().getEmail())
+                .phoneNumber(staff.getUser().getPhoneNumber())
                 .build();
     }
 }
