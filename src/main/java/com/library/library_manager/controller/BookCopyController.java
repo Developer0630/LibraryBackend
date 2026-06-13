@@ -18,7 +18,7 @@ public class BookCopyController {
     // Lấy danh sách bản in theo đầu sách
     @GetMapping
     public ApiResponse<List<BookCopyResponseDTO>> getCopies(
-            @RequestParam Long bookId,
+            @RequestParam(value = "bookId", required = true) Long bookId,
             @RequestParam(required = false) String status) {
         return ApiResponse.<List<BookCopyResponseDTO>>builder()
                 .data(bookCopyService.getByBookId(bookId, status))
@@ -27,7 +27,7 @@ public class BookCopyController {
 
     // Xem chi tiết một bản in
     @GetMapping("/{copyId}")
-    public ApiResponse<BookCopyResponseDTO> getDetail(@PathVariable Long copyId) {
+    public ApiResponse<BookCopyResponseDTO> getDetail(@PathVariable("copyId") Long copyId) {
         return ApiResponse.<BookCopyResponseDTO>builder()
                 .data(bookCopyService.getById(copyId))
                 .build();
@@ -36,7 +36,7 @@ public class BookCopyController {
     // Cập nhật trạng thái lưu thông (PATCH)
     @PatchMapping("/{copyId}/circulation-status")
     public ApiResponse<BookCopyResponseDTO> updateStatus(
-            @PathVariable Long copyId,
+            @PathVariable("copyId") Long copyId,
             @RequestParam String status) {
         return ApiResponse.<BookCopyResponseDTO>builder()
                 .data(bookCopyService.updateCirculationStatus(copyId, status))
