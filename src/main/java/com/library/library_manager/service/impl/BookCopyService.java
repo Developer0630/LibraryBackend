@@ -59,7 +59,7 @@ public class BookCopyService implements IBookCopyService {
                 .orElseThrow(() -> new AppException(ErrorCode.COPY_NOT_FOUND));
 
         // Kiểm tra logic: Nếu đang BORROWED thì không cho phép chuyển sang LOST/DAMAGED trực tiếp
-        // trừ khi xử lý qua luồng trả sách (tùy nghiệp vụ của bạn)
+        // trừ khi xử lý qua luồng trả sách 
         copy.setStatus(newStatus);
         return mapToResponseDTO(bookCopyRepository.save(copy));
     }

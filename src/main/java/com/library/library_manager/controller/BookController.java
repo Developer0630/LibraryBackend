@@ -30,20 +30,29 @@ public class BookController {
         return ApiResponse.<BookResponseDTO>builder().data(bookService.create(request)).build();
     }
 
+    
+    @PutMapping("/{bookId}")
+    public ApiResponse<BookResponseDTO> update(
+            @PathVariable("bookId") Long bookId, 
+            @RequestBody BookRequestDTO request) {
+        return ApiResponse.<BookResponseDTO>builder()
+                .data(bookService.update(bookId, request))
+                .build();
+    }
     @PutMapping("/{bookId}/shelf")
-    public ApiResponse<String> updateShelf(@PathVariable Long bookId, @RequestBody String shelf) {
+    public ApiResponse<String> updateShelf(@PathVariable("bookId") Long bookId, @RequestBody String shelf) {
         bookService.updateShelf(bookId, shelf);
         return ApiResponse.<String>builder().message("Updated shelf location").build();
     }
 
     @PatchMapping("/{bookId}/stock")
-    public ApiResponse<String> patchStock(@PathVariable Long bookId, @RequestParam int adjustment) {
+    public ApiResponse<String> patchStock(@PathVariable("bookId") Long bookId, @RequestParam int adjustment) {
         bookService.updateStock(bookId, adjustment);
         return ApiResponse.<String>builder().message("Stock adjusted").build();
     }
 
     @DeleteMapping("/{bookId}")
-    public ApiResponse<Void> delete(@PathVariable Long bookId) {
+    public ApiResponse<Void> delete(@PathVariable("bookId") Long bookId) {
         // Logic xóa đầu sách (Cascade sẽ tự xóa bản in chưa sử dụng)
         return ApiResponse.<Void>builder().message("Book deleted").build();
     }

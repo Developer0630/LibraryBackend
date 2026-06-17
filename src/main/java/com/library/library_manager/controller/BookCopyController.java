@@ -19,7 +19,7 @@ public class BookCopyController {
     @GetMapping
     public ApiResponse<List<BookCopyResponseDTO>> getCopies(
             @RequestParam(value = "bookId", required = true) Long bookId,
-            @RequestParam(required = false) String status) {
+            @RequestParam(value = "status", required = false) String status) {
         return ApiResponse.<List<BookCopyResponseDTO>>builder()
                 .data(bookCopyService.getByBookId(bookId, status))
                 .build();
@@ -37,7 +37,7 @@ public class BookCopyController {
     @PatchMapping("/{copyId}/circulation-status")
     public ApiResponse<BookCopyResponseDTO> updateStatus(
             @PathVariable("copyId") Long copyId,
-            @RequestParam String status) {
+            @RequestParam(value = "status") String status) {
         return ApiResponse.<BookCopyResponseDTO>builder()
                 .data(bookCopyService.updateCirculationStatus(copyId, status))
                 .build();
@@ -45,7 +45,7 @@ public class BookCopyController {
 
     // Xóa bản in
     @DeleteMapping("/{copyId}")
-    public ApiResponse<String> delete(@PathVariable Long copyId) {
+    public ApiResponse<String> delete(@PathVariable("copyId") Long copyId) {
         bookCopyService.delete(copyId);
         return ApiResponse.<String>builder()
                 .data("Book copy deleted successfully")

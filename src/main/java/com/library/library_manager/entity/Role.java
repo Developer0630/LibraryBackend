@@ -52,7 +52,7 @@ public class Role {
 
 
 
-    @ManyToMany(fetch = FetchType.EAGER) // EAGER để khi lấy Role là có luôn List quyền
+    @ManyToMany(fetch = FetchType.EAGER) 
 
     @JoinTable(
 

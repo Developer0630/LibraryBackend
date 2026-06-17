@@ -41,6 +41,8 @@ public class StudentService implements IStudentService {
 
     ILoanRepository loanRepository;
     IViolationRepository violationRepository;
+    
+    
 
     final IBorrowHistoryRepository borrowHistoryRepository;
     final IReservationRepository reservationRepository;
@@ -177,7 +179,7 @@ public class StudentService implements IStudentService {
 
     public StudentProfileResponseDTO getProfileByUsername(String username) {
         // 1. Tìm sinh viên dựa trên username của tài khoản liên kết
-        // findByUser_UserName là phương thức chúng ta đã thêm vào StudentRepository
+        // findByUser_UserName là phương thức đã thêm vào StudentRepository
         Student student = studentRepository.findByUser_UserName(username)
                 .orElseThrow(() -> new RuntimeException("Student information not found for the account: " + username));
 
@@ -226,11 +228,11 @@ public class StudentService implements IStudentService {
 
     // Xem đặt trước
     public List<ReservationResponse> getReservations(String username) {
-        // Gọi đúng tên hàm dài hơn một chút nhưng cực kỳ chính xác
+        
         return reservationRepository.findByStudent_User_UserNameOrderByRequestDateDesc(username).stream()
                 .map(r -> new ReservationResponse(
                         r.getBook().getTitle(),
-                        r.getRequestDate(), // Trong Entity bạn đặt là requestDate chứ không phải createdAt
+                        r.getRequestDate(), 
                         r.getStatus()
                 ))
                 .collect(Collectors.toList());

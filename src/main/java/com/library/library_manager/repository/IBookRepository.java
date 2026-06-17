@@ -9,7 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface IBookRepository extends JpaRepository<Book, Long> { // Đổi Integer thành Long
+public interface IBookRepository extends JpaRepository<Book, Long> { 
 
     @Query("SELECT b FROM Book b WHERE b.title LIKE %:kw% OR b.author LIKE %:kw%")
     Page<Book> searchBooks(@Param("kw") String keyword, Pageable pageable);

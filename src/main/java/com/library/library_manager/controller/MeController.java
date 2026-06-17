@@ -18,7 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MeController {
 
-    // Hãy đảm bảo có chữ 'final' để @RequiredArgsConstructor hoạt động đúng
+   
     private final StudentService studentService;
 
     private final String CURRENT_USER = "SV001"; // Giả lập username để test

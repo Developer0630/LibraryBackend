@@ -29,10 +29,10 @@ public class Book {
         @Column(name = "author", length = 150)
         String author;
 
-        @Column(name = "publisher", length = 255) // Mới thêm
+        @Column(name = "publisher", length = 255) 
         String publisher;
 
-        @Column(name = "isbn", length = 50)      // Mới thêm
+        @Column(name = "isbn", length = 50)      
         String isbn;
 
         @Column(name = "price")
@@ -41,7 +41,7 @@ public class Book {
         @Column(name = "description", columnDefinition = "TEXT")
         String description;
 
-        @Column(name = "status", length = 50)    // Mới thêm
+        @Column(name = "status", length = 50)   
         String status;
 
         // Quan hệ n-n với Category
