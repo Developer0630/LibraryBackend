@@ -3,6 +3,8 @@ package com.library.library_manager.service.impl;
 import com.library.library_manager.dto.loan.EligibilityResponseDTO;
 import com.library.library_manager.dto.loan.LoanRequestDTO;
 import com.library.library_manager.dto.loan.LoanResponseDTO;
+import com.library.library_manager.dto.returns.ReturnRequestDTO;
+import com.library.library_manager.dto.returns.ReturnScanResponseDTO;
 import com.library.library_manager.dto.student.StudentSummaryResponseDTO;
 import com.library.library_manager.entity.*;
 import com.library.library_manager.repository.*;
@@ -35,7 +37,7 @@ public class LoanService implements ILoanService {
         if (student == null) return new EligibilityResponseDTO(false, "Sinh viên không tồn tại trên hệ thống.");
         if (copy == null) return new EligibilityResponseDTO(false, "Mã bản sao sách không hợp lệ.");
         
-        // 🌟 SỬA: Chấp nhận cả trạng thái AVAILABLE và LOANED_PENDING (để phục vụ bước xác nhận tiếp theo không bị chặn)
+        // Chấp nhận cả trạng thái AVAILABLE và LOANED_PENDING (để phục vụ bước xác nhận tiếp theo không bị chặn)
         String status = copy.getStatus();
         if (!"AVAILABLE".equalsIgnoreCase(status) && !"LOANED_PENDING".equalsIgnoreCase(status)) {
             return new EligibilityResponseDTO(false, "Bản sao sách không sẵn sàng (Đang mượn hoặc lỗi).");
@@ -48,7 +50,7 @@ public class LoanService implements ILoanService {
             return new EligibilityResponseDTO(false, "Sinh viên vượt quá hạn mức nợ phạt cho phép (>50k).");
         }
 
-        // 🌟 SỬA: Chỉ đếm các đơn thực sự đang cầm trên tay (Active), loại bỏ đơn Pending ảo khỏi bộ lọc điều kiện mượn tự do
+        // Chỉ đếm các đơn thực sự đang cầm trên tay (Active), loại bỏ đơn Pending ảo khỏi bộ lọc điều kiện mượn tự do
         long activeLoans = loanRepository.findAll().stream()
                 .filter(l -> l.getUser().getUserName().equalsIgnoreCase(student.getUser().getUserName()))
                 .filter(l -> l.getReturnedAt() == null && "Active".equalsIgnoreCase(l.getStatus()))
@@ -200,7 +202,7 @@ public class LoanService implements ILoanService {
 
         String username = student.getUser().getUserName();
 
-        // 🌟 SỬA: Đếm chuẩn những đơn sách thực tế đang được mượn cầm về nhà (Active), bỏ qua Pending tạm thời để không bị khóa nút
+        // Đếm chuẩn những đơn sách thực tế đang được mượn cầm về nhà (Active), bỏ qua Pending tạm thời để không bị khóa nút
         long activeLoans = loanRepository.findAll().stream()
                 .filter(l -> l.getUser().getUserName().equalsIgnoreCase(username))
                 .filter(l -> l.getReturnedAt() == null && "Active".equalsIgnoreCase(l.getStatus()))
@@ -222,4 +224,5 @@ public class LoanService implements ILoanService {
                 student.getStatus() 
         );
     }
+    
 }
