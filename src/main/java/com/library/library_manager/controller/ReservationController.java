@@ -15,31 +15,35 @@ import java.util.List;
 public class ReservationController {
 
     private final StudentService studentService;
-    private final String CURRENT_USER = "SV001";
 
     // 1. Tạo yêu cầu đặt trước (Sử dụng ReservationRequestDTO)
     @PostMapping
-    public ResponseEntity<ReservationResponse> create(@RequestBody ReservationRequestDTO dto) {
-        return ResponseEntity.ok(studentService.createReservation(dto, CURRENT_USER));
+    public ResponseEntity<ReservationResponse> create(
+            @RequestBody ReservationRequestDTO dto,
+            @RequestParam("username") String username) {
+        return ResponseEntity.ok(studentService.createReservation(dto, username));
     }
 
     // 2. Xem danh sách đặt trước
     @GetMapping
-    public ResponseEntity<List<ReservationResponse>> getAll() {
-        // Tận dụng hàm getReservations đã viết ở module 3.4
-        return ResponseEntity.ok(studentService.getReservations(CURRENT_USER));
+    public ResponseEntity<List<ReservationResponse>> getAll(@RequestParam("username") String username) {
+        return ResponseEntity.ok(studentService.getReservations(username));
     }
 
     // 3. Xem chi tiết một yêu cầu đặt trước
     @GetMapping("/{reservationId}")
-    public ResponseEntity<ReservationResponse> getDetail(@PathVariable Long reservationId) {
-        return ResponseEntity.ok(studentService.getReservationDetail(reservationId, CURRENT_USER));
+    public ResponseEntity<ReservationResponse> getDetail(
+            @PathVariable Long reservationId,
+            @RequestParam("username") String username) { 
+        return ResponseEntity.ok(studentService.getReservationDetail(reservationId, username));
     }
 
     // 4. Hủy đặt trước
     @DeleteMapping("/{reservationId}")
-    public ResponseEntity<String> cancel(@PathVariable Long reservationId) {
-        studentService.cancelReservation(reservationId, CURRENT_USER);
+    public ResponseEntity<String> cancel(
+            @PathVariable Long reservationId,
+            @RequestParam("username") String username) { 
+        studentService.cancelReservation(reservationId, username);
         return ResponseEntity.ok("Hủy đặt trước thành công.");
     }
 }

@@ -13,4 +13,7 @@ public interface IReservationRepository extends JpaRepository<Reservation, Long>
 
     // Đếm số lượng đặt trước đang PENDING để kiểm tra hạn mức
     long countByStudent_User_UserNameAndStatus(String username, String status);
+
+    // Thêm dòng này để kiểm tra sinh viên đã đặt đầu sách này và đang ở trạng thái "Đang giữ" chưa
+    boolean existsByStudent_IdAndBook_IdAndStatus(Long studentId, Long bookId, String status);
 }

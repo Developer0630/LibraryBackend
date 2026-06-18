@@ -12,7 +12,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ReservationResponse {
+    private Long id;
     private String bookTitle;
-    private LocalDateTime createdAt;
+    private String createdAt;
     private String status; // Đang giữ, Hết hạn, Bị hủy
 }

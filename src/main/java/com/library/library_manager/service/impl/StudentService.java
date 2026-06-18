@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.HashSet;
@@ -178,15 +179,15 @@ public class StudentService implements IStudentService {
     }
 
     public StudentProfileResponseDTO getProfileByUsername(String username) {
-        // 1. Tìm sinh viên dựa trên username của tài khoản liên kết
+        // Tìm sinh viên dựa trên username của tài khoản liên kết
         // findByUser_UserName là phương thức đã thêm vào StudentRepository
         Student student = studentRepository.findByUser_UserName(username)
                 .orElseThrow(() -> new RuntimeException("Student information not found for the account: " + username));
 
-        // 2. Lấy thông tin User liên kết với sinh viên đó
+        // Lấy thông tin User liên kết với sinh viên đó
         User user = student.getUser();
 
-        // 3. Chuyển đổi sang DTO để trả về cho Controller
+        // Chuyển đổi sang DTO để trả về cho Controller
         // Đảm bảo thứ tự tham số khớp với Constructor trong StudentProfileResponse của bạn
         return new StudentProfileResponseDTO(
                 user.getFullName(),
@@ -199,7 +200,7 @@ public class StudentService implements IStudentService {
         );
     }
 
-    // 2. Xem sách đang mượn
+    // Xem sách đang mượn
     public List<BorrowedItemResponse> getBorrowedItems(String username) {
         return loanRepository.findByUser_UserNameAndReturnedAtIsNull(username).stream()
                 .map(loan -> {
@@ -210,7 +211,7 @@ public class StudentService implements IStudentService {
                 }).collect(Collectors.toList());
     }
 
-    // 3. Xem vi phạm
+    // Xem vi phạm
     public List<ViolationResponse> getViolations(String username) {
         return violationRepository.findByLoan_User_UserName(username).stream()
                 .map(v -> new ViolationResponse(v.getType(), v.getFineAmount(),
@@ -228,15 +229,17 @@ public class StudentService implements IStudentService {
 
     // Xem đặt trước
     public List<ReservationResponse> getReservations(String username) {
-        
-        return reservationRepository.findByStudent_User_UserNameOrderByRequestDateDesc(username).stream()
-                .map(r -> new ReservationResponse(
-                        r.getBook().getTitle(),
-                        r.getRequestDate(), 
-                        r.getStatus()
-                ))
-                .collect(Collectors.toList());
-    }
+    DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+    
+    return reservationRepository.findByStudent_User_UserNameOrderByRequestDateDesc(username).stream()
+            .map(r -> new ReservationResponse(
+                    r.getId(), 
+                    r.getBook().getTitle(),
+                    r.getRequestDate() != null ? r.getRequestDate().format(formatter) : null, // format sang String
+                    r.getStatus()
+            ))
+            .collect(Collectors.toList());
+}
 
     // Tổng tiền phạt cần đóng
     public FineResponse getTotalFines(String username) {
@@ -305,7 +308,19 @@ public class StudentService implements IStudentService {
 
     @Transactional
     public ReservationResponse createReservation(ReservationRequestDTO dto, String username) {
-        // 1. Kiểm tra hạn mức (Ví dụ: Tổng mượn + đặt không quá 5)
+        // Kiểm tra thông tin sinh viên
+        Student student = studentRepository.findByUser_UserName(username)
+                .orElseThrow(() -> new RuntimeException("Sinh viên không tồn tại."));
+
+        // (CHẶN SPAM): Kiểm tra xem sinh viên này đã đặt cuốn sách này và đang giữ phiếu chưa
+        // Giả định dto.getCopy_id() từ Mobile gửi lên đang đại diện cho Book ID của đầu sách
+        boolean alreadyReserved = reservationRepository
+                .existsByStudent_IdAndBook_IdAndStatus(student.getId(), dto.getCopy_id(), "Đang giữ");
+        if (alreadyReserved) {
+            throw new RuntimeException("Bạn đang có một yêu cầu đặt giữ chỗ cho cuốn sách này rồi!");
+        }
+
+        // Kiểm tra tổng hạn mức mượn + đặt trước (tối đa 5 cuốn)
         long currentLoans = loanRepository.countByUser_UserNameAndReturnedAtIsNull(username);
         long currentRes = reservationRepository.countByStudent_User_UserNameAndStatus(username, "Đang giữ");
 
@@ -313,25 +328,42 @@ public class StudentService implements IStudentService {
             throw new RuntimeException("Bạn đã đạt hạn mức mượn và đặt sách (tối đa 5 cuốn).");
         }
 
-        // 2. Tìm bản sao sách (Copy)
-        BookCopy copy = bookCopyRepository.findById(dto.getCopy_id())
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy bản sao sách này."));
+        // (TRỪ KHO KHẢ DỤNG): Tìm một bản sao sách (BookCopy) đang rảnh để giữ chỗ
+        // Bạn cần bổ sung phương thức findByBook_IdAndStatus trong IBookCopyRepository hoặc lấy danh sách ra filter
+        List<BookCopy> availableCopies = bookCopyRepository.findByBookId(dto.getCopy_id()).stream()
+                .filter(copy -> "AVAILABLE".equalsIgnoreCase(copy.getStatus()) || copy.getStatus() == null)
+                .toList();
 
-        Student student = studentRepository.findByUser_UserName(username)
-                .orElseThrow(() -> new RuntimeException("Sinh viên không tồn tại."));
+        if (availableCopies.isEmpty()) {
+            throw new RuntimeException("Rất tiếc, hiện tại không còn bản sao nào sẵn sàng để đặt chỗ.");
+        }
+        
+        // Lấy bản sao đầu tiên tìm thấy để thực hiện giữ chỗ cho User
+        BookCopy copyToReserve = availableCopies.get(0);
+        
+        // Cập nhật trạng thái bản sao thành "RESERVED" để hệ thống tự trừ số lượng kho (totalStock) đi
+        copyToReserve.setStatus("RESERVED");
+        bookCopyRepository.save(copyToReserve);
 
-        // 3. Tạo Reservation
+        // Tạo và lưu phiếu Reservation
         Reservation res = new Reservation();
-        res.setBook(copy.getBook());
-        res.setBookCopy(copy);
+        res.setBook(copyToReserve.getBook());
+        res.setBookCopy(copyToReserve);
         res.setStudent(student);
         res.setRequestDate(LocalDateTime.now());
         res.setExpirationDate(calculateExpirationDate(LocalDateTime.now()));
         res.setStatus("Đang giữ");
-
+        
         reservationRepository.save(res);
 
-        return new ReservationResponse(copy.getBook().getTitle(), res.getRequestDate(), res.getStatus());
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+
+        return new ReservationResponse(
+                res.getId(),                                    
+                res.getBookCopy().getBook().getTitle(),             
+                res.getRequestDate().format(formatter), 
+                res.getStatus()
+        );
     }
 
     // API Hủy đặt trước
@@ -362,7 +394,7 @@ public class StudentService implements IStudentService {
         review.setComment(dto.getComment());
         review.setCreatedAt(LocalDateTime.now()); // Cập nhật lại thời gian chỉnh sửa
 
-        // 4. Lưu lại (Hibernate sẽ tự động update nhờ @Transactional)
+        // 4. Lưu lại 
         bookReviewRepository.save(review);
     }
 
@@ -375,6 +407,11 @@ public class StudentService implements IStudentService {
             throw new RuntimeException("Bạn không có quyền xem chi tiết yêu cầu này");
         }
 
-        return new ReservationResponse(res.getBook().getTitle(), res.getRequestDate(), res.getStatus());
+        return new ReservationResponse(
+            res.getId(), 
+            res.getBook().getTitle(), 
+            res.getRequestDate() != null ? res.getRequestDate().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : null, // format chuẩn String
+            res.getStatus()
+    );
     }
 }
