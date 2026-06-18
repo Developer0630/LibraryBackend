@@ -33,6 +33,7 @@ public class Student {
     @Column(name = "status")
     String status;
 
+    @Builder.Default
     @Column(name = "total_debt")
     Double totalDebt = 0.0;
 

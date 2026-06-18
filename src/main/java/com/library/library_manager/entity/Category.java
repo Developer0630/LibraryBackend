@@ -29,6 +29,7 @@ public class Category {
         @Column(name = "description", columnDefinition = "TEXT")
         String description;
 
+        @Builder.Default
         @ManyToMany(mappedBy = "categories")
         Set<Book> books = new HashSet<>();
 }

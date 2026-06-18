@@ -32,6 +32,7 @@ public class Shelf {
     @Column(name = "floor_level")
     Integer floorLevel; // Tầng số mấy
 
+    @Builder.Default
     @ManyToMany(mappedBy = "shelves")
     Set<Book> books = new HashSet<>();
 }

@@ -23,9 +23,11 @@ public class Violation {
         @Column(name = "type")
         String type; // Ví dụ: Late Return, Damaged Book
 
+        @Builder.Default
         @Column(name = "fine_amount")
         Double fineAmount = 0.0;
 
+        @Builder.Default
         @Column(name = "is_paid")
         Boolean isPaid = false;
 

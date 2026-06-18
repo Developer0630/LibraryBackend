@@ -16,7 +16,6 @@ import java.util.Set;
 @AllArgsConstructor
 @Entity
 @Table(name = "user")
-@Data
 public class User {
 
     @Id
@@ -39,14 +38,14 @@ public class User {
     @Column(name = "password", nullable = false)
     String password;
 
-    // Quan hệ n-n với Roles
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
-            name = "user_role", // Tên bảng trung gian tự sinh
+            name = "user_role",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
-    private Set<Role> roles = new HashSet<>();
+    @Builder.Default
+    Set<Role> roles = new HashSet<>();
 
     @OneToMany(mappedBy = "user")
     List<Incident> reportedIncidents;

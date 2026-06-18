@@ -20,6 +20,7 @@ public class Loan {
         @Column(name = "loan_id")
         Long id;
 
+        @Builder.Default
         @Column(name = "borrow_date", nullable = false)
         LocalDateTime borrowDate = LocalDateTime.now();
 

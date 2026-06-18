@@ -23,6 +23,7 @@ public class Reservation {
         @Column(name = "reservation_id")
         Long id;
 
+        @Builder.Default
         @Column(name = "request_date", nullable = false)
         LocalDateTime requestDate = LocalDateTime.now();
 

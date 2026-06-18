@@ -22,12 +22,14 @@ public class ReturnTransaction {
     @Column(name = "return_id")
     Long id;
 
+    @Builder.Default
     @Column(name = "return_date", nullable = false)
     LocalDateTime returnDate = LocalDateTime.now();
 
     @Column(name = "actual_condition")
     String actualCondition; // Tình trạng sách khi trả
 
+    @Builder.Default
     @Column(name = "late_fee")
     Double lateFee = 0.0;
 

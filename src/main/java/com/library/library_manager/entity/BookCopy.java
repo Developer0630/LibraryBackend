@@ -31,6 +31,7 @@ public class BookCopy {
         @Column(name = "shelf_location")
         String shelfLocation;
 
+        @Builder.Default
         @Column(name = "entry_date")
         LocalDateTime entryDate = LocalDateTime.now();
 

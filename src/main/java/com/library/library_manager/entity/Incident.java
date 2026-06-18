@@ -34,6 +34,7 @@ public class Incident {
         @Column(name = "status", length = 50)
         String status; // Ví dụ: Pending, In Progress, Resolved, Closed
 
+        @Builder.Default
         @Column(name = "created_at")
         LocalDateTime createdAt = LocalDateTime.now();
 

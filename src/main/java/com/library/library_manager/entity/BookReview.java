@@ -29,6 +29,7 @@ public class BookReview {
     @Column(name = "comment", columnDefinition = "TEXT")
     String comment;
 
+    @Builder.Default
     @Column(name = "created_at")
     LocalDateTime createdAt = LocalDateTime.now();
 

@@ -31,6 +31,7 @@ public class Permission {
     @Column(name = "description")
     String description;
 
+    @Builder.Default
     @ManyToMany(mappedBy = "permissions")
     Set<Role> roles = new HashSet<>();
 }
